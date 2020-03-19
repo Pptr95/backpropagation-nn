@@ -64,12 +64,6 @@ def initialize_weights(n_x, n_h, n_y):
     b1 = np.zeros((n_h, 1))
     W2 = np.random.randn(n_y, n_h) * 0.01
     b2 = np.zeros((n_y, 1))
-  
-    
-    assert (W1.shape == (n_h, n_x))
-    assert (b1.shape == (n_h, 1))
-    assert (W2.shape == (n_y, n_h))
-    assert (b2.shape == (n_y, 1))
     
     weights = {"W1": W1,
                   "b1": b1,
@@ -89,9 +83,6 @@ def forward_propagation(X, weights):
     A1 = np.tanh(Z1)
     Z2 = np.dot(W2, A1) + b2
     A2 = sigmoid(Z2)
-   
-    
-    assert(A2.shape == (1, X.shape[1]))
     
     tanh_comp = {"Z1": Z1,
              "A1": A1,
@@ -101,13 +92,10 @@ def forward_propagation(X, weights):
     return A2, tanh_comp
 
 
-def compute_cost(A2, Y):
+def loss_function(A2, Y):
     m = Y.shape[1] 
-
     cost = (-1/m) * (np.dot(np.log(A2), Y.T) + np.dot(np.log(1 - A2), (1 - Y).T))
     cost = float(np.squeeze(cost))
-    assert(isinstance(cost, float))
-    
     return cost
 
 
@@ -161,7 +149,7 @@ def update_weights(weights, gradients, learning_rate = 0.1):
     return weights
 
 
-def nn_model(X, Y, n_h, num_iterations = 10000, print_cost=False):
+def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
     
     np.random.seed(3)
     n_x = layer_sizes(X, Y)[0]
@@ -171,7 +159,7 @@ def nn_model(X, Y, n_h, num_iterations = 10000, print_cost=False):
   
     for i in range(0, num_iterations):
         A2, tanh_comp = forward_propagation(X, weights)
-        cost = compute_cost(A2, Y)
+        cost = loss_function(A2, Y)
         gradients = backward_propagation(weights, tanh_comp, X, Y)
         weights = update_weights(weights, gradients)
         if print_cost and i % 1000 == 0:
@@ -191,7 +179,7 @@ X, Y = load_flower_dataset(1)
 n_h = 4
 hidden_layer_sizes = [1, 2, 5]
 for i, n_h in enumerate(hidden_layer_sizes):
-    weights = nn_model(X, Y, n_h, num_iterations = 5000, print_cost = True)
+    weights = NeuralNetwork(X, Y, n_h, num_iterations = 5000, print_cost = True)
     plot_decision_boundary(lambda x: predict(weights, x.T), X, Y)
     predictions = predict(weights, X)
     accuracy = float((np.dot(Y,predictions.T) + np.dot(1-Y,1-predictions.T))/float(Y.size)*100)
