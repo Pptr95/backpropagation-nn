@@ -7,7 +7,6 @@ import sklearn.linear_model
 import scipy.io as sio
 
 
-np.random.seed(1)
 
 def plot_decision_boundary(model, X, y):
     plt.figure(figsize=(8,8))
@@ -46,6 +45,7 @@ def load_flower_dataset(seed):
     return X, Y
 
 
+
 def sigmoid(z):
     return 1/(1+np.exp(-z))
 
@@ -58,38 +58,17 @@ def layer_sizes(X, Y):
 
 
 def initialize_weights(n_x, n_h, n_y):
-
-    np.random.seed(2)
     W1 = np.random.randn(n_h, n_x) * 0.01
     b1 = np.zeros((n_h, 1))
     W2 = np.random.randn(n_y, n_h) * 0.01
     b2 = np.zeros((n_y, 1))
     
     weights = {"W1": W1,
-                  "b1": b1,
-                  "W2": W2,
-                  "b2": b2}
+               "b1": b1,
+               "W2": W2,
+               "b2": b2}
     
     return weights
-
-
-def forward_propagation(X, weights):
-    W1 = weights["W1"]
-    b1 = weights["b1"]
-    W2 = weights["W2"]
-    b2 = weights["b2"]
-     
-    Z1 = np.dot(W1, X) + b1
-    A1 = np.tanh(Z1)
-    Z2 = np.dot(W2, A1) + b2
-    A2 = sigmoid(Z2)
-    
-    tanh_comp = {"Z1": Z1,
-             "A1": A1,
-             "Z2": Z2,
-             "A2": A2}
-    
-    return A2, tanh_comp
 
 
 def loss_function(A2, Y):
@@ -99,33 +78,16 @@ def loss_function(A2, Y):
     return cost
 
 
-def backward_propagation(weights, tanh_comp, X, Y):
-    m = X.shape[1]
-    
-    W1 = weights["W1"]
-    W2 = weights["W2"]
-  
-    A1 = tanh_comp["A1"]
-    A2 = tanh_comp["A2"]
 
-    dZ2 = A2 - Y
-    dW2 = (1/m)*np.dot(dZ2, A1.T)
-    db2 = (1/m)*np.sum(dZ2, axis=1, keepdims=True)
-    dZ1 = np.dot(W2.T, dZ2) * (1 - np.power(A1, 2))
-    dW1 = (1/m)*np.dot(dZ1, X.T)
-    db1 = (1/m)*np.sum(dZ1, axis=1, keepdims=True)
-  
+
+def predict(weights, X):
+    A2, prev_activations = forward_propagation(X, weights)
+    predictions = np.where(A2 > 0.5, 1, 0)
     
-    gradients = {"dW1": dW1,
-                "db1": db1,
-                "dW2": dW2,
-                "db2": db2}
-    
-    return gradients
+    return predictions
 
 
 def update_weights(weights, gradients, learning_rate = 0.1):
-
     W1 = weights["W1"]
     b1 = weights["b1"]
     W2 = weights["W2"]
@@ -142,25 +104,76 @@ def update_weights(weights, gradients, learning_rate = 0.1):
     b2 = b2 - (learning_rate * db2)
    
     weights = {"W1": W1,
-                  "b1": b1,
-                  "W2": W2,
-                  "b2": b2}
+               "b1": b1,
+               "W2": W2,
+               "b2": b2}
     
     return weights
 
 
-def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
+def forward_propagation(X, weights):
+    W1 = weights["W1"]
+    b1 = weights["b1"]
+    W2 = weights["W2"]
+    b2 = weights["b2"]
+     
+    Z1 = np.dot(W1, X) + b1
+    A1 = np.tanh(Z1)
+    Z2 = np.dot(W2, A1) + b2
+    A2 = sigmoid(Z2)
     
-    np.random.seed(3)
+    prev_activations = {"Z1": Z1,
+                        "A1": A1,
+                        "Z2": Z2,
+                        "A2": A2}
+    
+    return A2, prev_activations
+
+
+
+'''
+Backprop is the algorithm for determining how a single training example would like to change weights and biases.
+Not just in terms of whether they should go up and down, but in terms of what relative proportions to those changes
+cause the most rapid decrease of the cost loss function.
+
+Specifically it provides iterative rules to compute partial derivatives of the loss function wrt each weight of the network.
+'''
+def backward_propagation(weights, prev_activations, X, Y):
+    m = X.shape[1]
+    
+    W1 = weights["W1"]
+    W2 = weights["W2"]
+  
+    A1 = prev_activations["A1"]
+    A2 = prev_activations["A2"]
+
+    dZ2 = A2 - Y
+    dW2 = (1/m)*np.dot(dZ2, A1.T)
+    db2 = (1/m)*np.sum(dZ2, axis=1, keepdims=True)
+    dZ1 = np.dot(W2.T, dZ2) * (1 - np.power(A1, 2))
+    dW1 = (1/m)*np.dot(dZ1, X.T)
+    db1 = (1/m)*np.sum(dZ1, axis=1, keepdims=True)
+  
+    
+    gradients = {"dW1": dW1,
+                 "db1": db1,
+                 "dW2": dW2,
+                 "db2": db2}
+    
+    return gradients
+
+
+
+def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
     n_x = layer_sizes(X, Y)[0]
     n_y = layer_sizes(X, Y)[2]
     
     weights = initialize_weights(X.shape[0], n_h, Y.shape[0])
   
     for i in range(0, num_iterations):
-        A2, tanh_comp = forward_propagation(X, weights)
+        A2, prev_activations = forward_propagation(X, weights)
         cost = loss_function(A2, Y)
-        gradients = backward_propagation(weights, tanh_comp, X, Y)
+        gradients = backward_propagation(weights, prev_activations, X, Y)
         weights = update_weights(weights, gradients)
         if print_cost and i % 1000 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
@@ -168,12 +181,9 @@ def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
     return weights
 
 
-def predict(weights, X):
-    A2, tanh_comp = forward_propagation(X, weights)
-    predictions = np.where(A2 > 0.5, 1, 0)
-    
-    return predictions
 
+
+# run model
 
 X, Y = load_flower_dataset(1)
 n_h = 4
