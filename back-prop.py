@@ -1,10 +1,5 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import sklearn
-import sklearn.datasets
-import sklearn.linear_model
-import scipy.io as sio
 
 
 
@@ -83,7 +78,6 @@ def loss_function(A2, Y):
 def predict(weights, X):
     A2, prev_activations = forward_propagation(X, weights)
     predictions = np.where(A2 > 0.5, 1, 0)
-    
     return predictions
 
 
