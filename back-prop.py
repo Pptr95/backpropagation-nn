@@ -18,6 +18,7 @@ def plot_decision_boundary(model, X, y):
     plt.show()
 
 
+
 def load_flower_dataset(seed):
     np.random.seed(seed)
     m = 400
@@ -45,11 +46,13 @@ def sigmoid(z):
     return 1/(1+np.exp(-z))
 
 
+
 def layer_sizes(X, Y):
     n_x = X.shape[0]
     n_h = 4
     n_y = Y.shape[0]
     return (n_x, n_h, n_y)
+
 
 
 def initialize_weights(n_x, n_h, n_y):
@@ -66,6 +69,7 @@ def initialize_weights(n_x, n_h, n_y):
     return weights
 
 
+
 def loss_function(A2, Y):
     m = Y.shape[1] 
     cost = (-1/m) * (np.dot(np.log(A2), Y.T) + np.dot(np.log(1 - A2), (1 - Y).T))
@@ -79,6 +83,7 @@ def predict(weights, X):
     A2, prev_activations = forward_propagation(X, weights)
     predictions = np.where(A2 > 0.5, 1, 0)
     return predictions
+
 
 
 def update_weights(weights, gradients, learning_rate = 0.1):
@@ -105,6 +110,7 @@ def update_weights(weights, gradients, learning_rate = 0.1):
     return weights
 
 
+
 def forward_propagation(X, weights):
     W1 = weights["W1"]
     b1 = weights["b1"]
@@ -125,13 +131,6 @@ def forward_propagation(X, weights):
 
 
 
-'''
-Backprop is the algorithm for determining how a single training example would like to change weights and biases.
-Not just in terms of whether they should go up and down, but in terms of what relative proportions to those changes
-cause the most rapid decrease of the cost loss function.
-
-Specifically it provides iterative rules to compute partial derivatives of the loss function wrt each weight of the network.
-'''
 def backward_propagation(weights, prev_activations, X, Y):
     m = X.shape[1]
     
@@ -178,10 +177,9 @@ def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
 
 
 # run model
-
 X, Y = load_flower_dataset(1)
 n_h = 4
-hidden_layer_sizes = [1, 2, 5]
+hidden_layer_sizes = [1, 2, 5, 50]
 for i, n_h in enumerate(hidden_layer_sizes):
     weights = NeuralNetwork(X, Y, n_h, num_iterations = 5000, print_cost = True)
     plot_decision_boundary(lambda x: predict(weights, x.T), X, Y)
