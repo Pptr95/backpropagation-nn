@@ -162,7 +162,9 @@ def NeuralNetwork(X, Y, n_h, num_iterations = 10000, print_cost=False):
     n_y = layer_sizes(X, Y)[2]
     
     weights = initialize_weights(X.shape[0], n_h, Y.shape[0])
-  
+    
+    
+    # Loop (gradient descent)
     for i in range(0, num_iterations):
         A2, prev_activations = forward_propagation(X, weights)
         cost = loss_function(A2, Y)
